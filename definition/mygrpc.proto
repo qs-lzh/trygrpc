@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package trygrpc;
+
+option go_package = "github.com/qs-lzh/trygrpc/definition;definition";
+
+
+message Student {
+  int32 id = 1;
+  string name = 2;
+  int32 age = 3;
+  string gender = 4;
+}
+
+message StudentRequestById {
+  int32 id = 1;
+}
+
+service StudentService {
+  rpc DescribeStudent(StudentRequestById) returns (Student);
+}
