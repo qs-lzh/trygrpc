@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package trygrpc;
 
+import "google/protobuf/empty.proto";
+
 option go_package = "github.com/qs-lzh/trygrpc/definition;definition";
 
 
@@ -16,6 +18,15 @@ message StudentRequestById {
   int32 id = 1;
 }
 
+message Error {
+  bool success = 1;
+  string msg = 2;
+}
+
 service StudentService {
+  rpc AddStudent(Student) returns (Error);
   rpc DescribeStudent(StudentRequestById) returns (Student);
+  rpc ListStudents(google.protobuf.Empty) returns (stream Student);
+  rpc AddSeveralStudent(stream Student) returns (Error);
+  rpc DescribeSeveralStudents(stream StudentRequestById) returns (stream Student);
 }

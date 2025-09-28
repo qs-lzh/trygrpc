@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,14 +20,22 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	StudentService_DescribeStudent_FullMethodName = "/trygrpc.StudentService/DescribeStudent"
+	StudentService_AddStudent_FullMethodName              = "/trygrpc.StudentService/AddStudent"
+	StudentService_DescribeStudent_FullMethodName         = "/trygrpc.StudentService/DescribeStudent"
+	StudentService_ListStudents_FullMethodName            = "/trygrpc.StudentService/ListStudents"
+	StudentService_AddSeveralStudent_FullMethodName       = "/trygrpc.StudentService/AddSeveralStudent"
+	StudentService_DescribeSeveralStudents_FullMethodName = "/trygrpc.StudentService/DescribeSeveralStudents"
 )
 
 // StudentServiceClient is the client API for StudentService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type StudentServiceClient interface {
+	AddStudent(ctx context.Context, in *Student, opts ...grpc.CallOption) (*Error, error)
 	DescribeStudent(ctx context.Context, in *StudentRequestById, opts ...grpc.CallOption) (*Student, error)
+	ListStudents(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Student], error)
+	AddSeveralStudent(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[Student, Error], error)
+	DescribeSeveralStudents(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[StudentRequestById, Student], error)
 }
 
 type studentServiceClient struct {
@@ -35,6 +44,16 @@ type studentServiceClient struct {
 
 func NewStudentServiceClient(cc grpc.ClientConnInterface) StudentServiceClient {
 	return &studentServiceClient{cc}
+}
+
+func (c *studentServiceClient) AddStudent(ctx context.Context, in *Student, opts ...grpc.CallOption) (*Error, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Error)
+	err := c.cc.Invoke(ctx, StudentService_AddStudent_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *studentServiceClient) DescribeStudent(ctx context.Context, in *StudentRequestById, opts ...grpc.CallOption) (*Student, error) {
@@ -47,11 +66,60 @@ func (c *studentServiceClient) DescribeStudent(ctx context.Context, in *StudentR
 	return out, nil
 }
 
+func (c *studentServiceClient) ListStudents(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Student], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &StudentService_ServiceDesc.Streams[0], StudentService_ListStudents_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[emptypb.Empty, Student]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type StudentService_ListStudentsClient = grpc.ServerStreamingClient[Student]
+
+func (c *studentServiceClient) AddSeveralStudent(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[Student, Error], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &StudentService_ServiceDesc.Streams[1], StudentService_AddSeveralStudent_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[Student, Error]{ClientStream: stream}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type StudentService_AddSeveralStudentClient = grpc.ClientStreamingClient[Student, Error]
+
+func (c *studentServiceClient) DescribeSeveralStudents(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[StudentRequestById, Student], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &StudentService_ServiceDesc.Streams[2], StudentService_DescribeSeveralStudents_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[StudentRequestById, Student]{ClientStream: stream}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type StudentService_DescribeSeveralStudentsClient = grpc.BidiStreamingClient[StudentRequestById, Student]
+
 // StudentServiceServer is the server API for StudentService service.
 // All implementations must embed UnimplementedStudentServiceServer
 // for forward compatibility.
 type StudentServiceServer interface {
+	AddStudent(context.Context, *Student) (*Error, error)
 	DescribeStudent(context.Context, *StudentRequestById) (*Student, error)
+	ListStudents(*emptypb.Empty, grpc.ServerStreamingServer[Student]) error
+	AddSeveralStudent(grpc.ClientStreamingServer[Student, Error]) error
+	DescribeSeveralStudents(grpc.BidiStreamingServer[StudentRequestById, Student]) error
 	mustEmbedUnimplementedStudentServiceServer()
 }
 
@@ -62,8 +130,20 @@ type StudentServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedStudentServiceServer struct{}
 
+func (UnimplementedStudentServiceServer) AddStudent(context.Context, *Student) (*Error, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddStudent not implemented")
+}
 func (UnimplementedStudentServiceServer) DescribeStudent(context.Context, *StudentRequestById) (*Student, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DescribeStudent not implemented")
+}
+func (UnimplementedStudentServiceServer) ListStudents(*emptypb.Empty, grpc.ServerStreamingServer[Student]) error {
+	return status.Errorf(codes.Unimplemented, "method ListStudents not implemented")
+}
+func (UnimplementedStudentServiceServer) AddSeveralStudent(grpc.ClientStreamingServer[Student, Error]) error {
+	return status.Errorf(codes.Unimplemented, "method AddSeveralStudent not implemented")
+}
+func (UnimplementedStudentServiceServer) DescribeSeveralStudents(grpc.BidiStreamingServer[StudentRequestById, Student]) error {
+	return status.Errorf(codes.Unimplemented, "method DescribeSeveralStudents not implemented")
 }
 func (UnimplementedStudentServiceServer) mustEmbedUnimplementedStudentServiceServer() {}
 func (UnimplementedStudentServiceServer) testEmbeddedByValue()                        {}
@@ -86,6 +166,24 @@ func RegisterStudentServiceServer(s grpc.ServiceRegistrar, srv StudentServiceSer
 	s.RegisterService(&StudentService_ServiceDesc, srv)
 }
 
+func _StudentService_AddStudent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Student)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StudentServiceServer).AddStudent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StudentService_AddStudent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StudentServiceServer).AddStudent(ctx, req.(*Student))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _StudentService_DescribeStudent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(StudentRequestById)
 	if err := dec(in); err != nil {
@@ -104,6 +202,31 @@ func _StudentService_DescribeStudent_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StudentService_ListStudents_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(emptypb.Empty)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(StudentServiceServer).ListStudents(m, &grpc.GenericServerStream[emptypb.Empty, Student]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type StudentService_ListStudentsServer = grpc.ServerStreamingServer[Student]
+
+func _StudentService_AddSeveralStudent_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(StudentServiceServer).AddSeveralStudent(&grpc.GenericServerStream[Student, Error]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type StudentService_AddSeveralStudentServer = grpc.ClientStreamingServer[Student, Error]
+
+func _StudentService_DescribeSeveralStudents_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(StudentServiceServer).DescribeSeveralStudents(&grpc.GenericServerStream[StudentRequestById, Student]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type StudentService_DescribeSeveralStudentsServer = grpc.BidiStreamingServer[StudentRequestById, Student]
+
 // StudentService_ServiceDesc is the grpc.ServiceDesc for StudentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -112,10 +235,31 @@ var StudentService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*StudentServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "AddStudent",
+			Handler:    _StudentService_AddStudent_Handler,
+		},
+		{
 			MethodName: "DescribeStudent",
 			Handler:    _StudentService_DescribeStudent_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "ListStudents",
+			Handler:       _StudentService_ListStudents_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "AddSeveralStudent",
+			Handler:       _StudentService_AddSeveralStudent_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "DescribeSeveralStudents",
+			Handler:       _StudentService_DescribeSeveralStudents_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "definition/mygrpc.proto",
 }

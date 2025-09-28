@@ -9,6 +9,7 @@ package definition
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -133,20 +134,80 @@ func (x *StudentRequestById) GetId() int32 {
 	return 0
 }
 
+type Error struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Error) Reset() {
+	*x = Error{}
+	mi := &file_definition_mygrpc_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Error) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Error) ProtoMessage() {}
+
+func (x *Error) ProtoReflect() protoreflect.Message {
+	mi := &file_definition_mygrpc_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Error.ProtoReflect.Descriptor instead.
+func (*Error) Descriptor() ([]byte, []int) {
+	return file_definition_mygrpc_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *Error) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *Error) GetMsg() string {
+	if x != nil {
+		return x.Msg
+	}
+	return ""
+}
+
 var File_definition_mygrpc_proto protoreflect.FileDescriptor
 
 const file_definition_mygrpc_proto_rawDesc = "" +
 	"\n" +
-	"\x17definition/mygrpc.proto\x12\atrygrpc\"W\n" +
+	"\x17definition/mygrpc.proto\x12\atrygrpc\x1a\x1bgoogle/protobuf/empty.proto\"W\n" +
 	"\aStudent\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x10\n" +
 	"\x03age\x18\x03 \x01(\x05R\x03age\x12\x16\n" +
 	"\x06gender\x18\x04 \x01(\tR\x06gender\"$\n" +
 	"\x12StudentRequestById\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x05R\x02id2R\n" +
-	"\x0eStudentService\x12@\n" +
-	"\x0fDescribeStudent\x12\x1b.trygrpc.StudentRequestById\x1a\x10.trygrpc.StudentB1Z/github.com/qs-lzh/trygrpc/definition;definitionb\x06proto3"
+	"\x02id\x18\x01 \x01(\x05R\x02id\"3\n" +
+	"\x05Error\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
+	"\x03msg\x18\x02 \x01(\tR\x03msg2\xc5\x02\n" +
+	"\x0eStudentService\x12.\n" +
+	"\n" +
+	"AddStudent\x12\x10.trygrpc.Student\x1a\x0e.trygrpc.Error\x12@\n" +
+	"\x0fDescribeStudent\x12\x1b.trygrpc.StudentRequestById\x1a\x10.trygrpc.Student\x12:\n" +
+	"\fListStudents\x12\x16.google.protobuf.Empty\x1a\x10.trygrpc.Student0\x01\x127\n" +
+	"\x11AddSeveralStudent\x12\x10.trygrpc.Student\x1a\x0e.trygrpc.Error(\x01\x12L\n" +
+	"\x17DescribeSeveralStudents\x12\x1b.trygrpc.StudentRequestById\x1a\x10.trygrpc.Student(\x010\x01B1Z/github.com/qs-lzh/trygrpc/definition;definitionb\x06proto3"
 
 var (
 	file_definition_mygrpc_proto_rawDescOnce sync.Once
@@ -160,16 +221,26 @@ func file_definition_mygrpc_proto_rawDescGZIP() []byte {
 	return file_definition_mygrpc_proto_rawDescData
 }
 
-var file_definition_mygrpc_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_definition_mygrpc_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_definition_mygrpc_proto_goTypes = []any{
 	(*Student)(nil),            // 0: trygrpc.Student
 	(*StudentRequestById)(nil), // 1: trygrpc.StudentRequestById
+	(*Error)(nil),              // 2: trygrpc.Error
+	(*emptypb.Empty)(nil),      // 3: google.protobuf.Empty
 }
 var file_definition_mygrpc_proto_depIdxs = []int32{
-	1, // 0: trygrpc.StudentService.DescribeStudent:input_type -> trygrpc.StudentRequestById
-	0, // 1: trygrpc.StudentService.DescribeStudent:output_type -> trygrpc.Student
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
+	0, // 0: trygrpc.StudentService.AddStudent:input_type -> trygrpc.Student
+	1, // 1: trygrpc.StudentService.DescribeStudent:input_type -> trygrpc.StudentRequestById
+	3, // 2: trygrpc.StudentService.ListStudents:input_type -> google.protobuf.Empty
+	0, // 3: trygrpc.StudentService.AddSeveralStudent:input_type -> trygrpc.Student
+	1, // 4: trygrpc.StudentService.DescribeSeveralStudents:input_type -> trygrpc.StudentRequestById
+	2, // 5: trygrpc.StudentService.AddStudent:output_type -> trygrpc.Error
+	0, // 6: trygrpc.StudentService.DescribeStudent:output_type -> trygrpc.Student
+	0, // 7: trygrpc.StudentService.ListStudents:output_type -> trygrpc.Student
+	2, // 8: trygrpc.StudentService.AddSeveralStudent:output_type -> trygrpc.Error
+	0, // 9: trygrpc.StudentService.DescribeSeveralStudents:output_type -> trygrpc.Student
+	5, // [5:10] is the sub-list for method output_type
+	0, // [0:5] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -186,7 +257,7 @@ func file_definition_mygrpc_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_definition_mygrpc_proto_rawDesc), len(file_definition_mygrpc_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
